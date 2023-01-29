@@ -39,6 +39,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "epc"
+version = "0.1.1"
+dependencies = [
+ "epub",
+ "glob",
+]
+
+[[package]]
 name = "epub"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -62,6 +70,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "glob"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d2fabcfbdc87f4758337ca535fb41a6d701b65693ce38287d856d1674551ec9b"
+
+[[package]]
 name = "memchr"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -81,13 +95,6 @@ name = "percent-encoding"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "478c572c3d73181ff3c2539045f6eb99e5491218eae919370993b890cdbdd98e"
-
-[[package]]
-name = "pg_count"
-version = "0.1.0"
-dependencies = [
- "epub",
-]
 
 [[package]]
 name = "proc-macro2"
