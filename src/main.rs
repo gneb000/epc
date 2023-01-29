@@ -1,12 +1,12 @@
 /// Returns the page count of an epub file (based on 2000 chars per page).
-use std::io::stdin;
+use std::env;
 use epub::doc::EpubDoc;
 
 const CHARS_PER_PAGE: usize = 2000;
 
 fn main() {
-    let mut epub_path = String::new();
-    stdin().read_line(&mut epub_path).expect("Invalid epub file path provided.");
+    let args: Vec<String> = env::args().collect();
+    let mut epub_path = &args[1];
 
     let mut doc = EpubDoc::new(epub_path.trim()).unwrap();
     let mut spine = doc.spine.clone();
