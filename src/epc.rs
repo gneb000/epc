@@ -1,41 +1,51 @@
-/// Counts the pages in an epub file (based on 2000 chars per page). If a directory path
-/// is provided, recursively counts the pages in all the epub files within that directory.
+/// Counts the pages in an epub file (based on 2000 chars per page).
+
+use epub::doc::EpubDoc;
 use std::env;
 use std::path::Path;
-use epub::doc::EpubDoc;
-use glob::glob;
 
 const CHARS_PER_PAGE: usize = 2000;
 
-fn count_epub_pages(epub_file: &str) -> usize {
-    let mut doc = EpubDoc::new(epub_file).unwrap();
-    let mut spine = doc.spine.clone();
-
-    let mut char_count = 0;
-    for res_id in spine.iter_mut() {
-        char_count += doc.get_resource_str(res_id).unwrap().0.chars().filter(|s| *s!='\n').count();
-    }
-    char_count / CHARS_PER_PAGE
+fn count_epub_pages(epub_file: &Path) -> Option<usize> {
+    return match EpubDoc::new(epub_file) {
+        Err(_) => None,
+        Ok(mut doc) => {
+            let char_count = doc.spine.clone().iter().fold(0_usize, |acc, r| {
+                acc + doc
+                    .get_resource_str(r)
+                    .unwrap_or((String::new(), String::new()))
+                    .0
+                    .chars()
+                    .filter(|s| *s != '\n')
+                    .count()
+            });
+            Some(char_count / CHARS_PER_PAGE)
+        }
+    };
 }
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let input_path = args[1].trim();
+    let input_path = Path::new(args[1].trim());
 
-    let epub_list: Vec<String>;
-    if Path::new(input_path).is_dir() {
-        let glob_pattern = input_path.to_owned() + "/**/*.epub";
-        epub_list = glob(&glob_pattern).unwrap()
-            .map(|x| x.unwrap().display().to_string())
-            .collect();
-    } else {
-        epub_list = vec!(input_path.to_string());
+    if !input_path.exists() || input_path.is_dir() {
+        println!("epc: file not found");
+        return;
     }
 
-    for item in epub_list.iter() {
-        println!(
-            "{} {}",
-            count_epub_pages(item),
-            Path::new(item).file_name().unwrap().to_string_lossy().replace(".epub", ""));
+    if input_path.extension().unwrap_or(String::new().as_ref()) != "epub" {
+        println!("epc: file not an epub");
+        return;
     }
+
+    match count_epub_pages(input_path) {
+        None => println!("epc: unable to read epub contents"),
+        Some(page_count) => {
+            println!(
+                "{} {}",
+                page_count,
+                input_path.file_name().unwrap().to_string_lossy().replace(".epub", "")
+            );
+        }
+    };
 }
