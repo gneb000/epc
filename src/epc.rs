@@ -1,12 +1,22 @@
 /// Counts the pages in an epub file (based on 2000 chars per page).
-
 use epub::doc::EpubDoc;
-use std::env;
 use std::path::Path;
 
-const CHARS_PER_PAGE: usize = 2000;
+use clap::Parser;
 
-fn count_epub_pages(epub_file: &Path) -> Option<usize> {
+/// epub page counter (epc): counts pages in epub file based on char count
+#[derive(Parser)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    /// path to epub file
+    #[arg(value_name = "EPUB_FILE")]
+    file: String,
+    /// char count per page
+    #[arg(short, long, default_value_t = 2000)]
+    chars_per_page: usize,
+}
+
+fn count_epub_pages(epub_file: &Path, chars_per_page: usize) -> Option<usize> {
     return match EpubDoc::new(epub_file) {
         Err(_) => None,
         Ok(mut doc) => {
@@ -19,32 +29,34 @@ fn count_epub_pages(epub_file: &Path) -> Option<usize> {
                     .filter(|s| *s != '\n')
                     .count()
             });
-            Some(char_count / CHARS_PER_PAGE)
+            Some(char_count / chars_per_page)
         }
     };
 }
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    let input_path = Path::new(args[1].trim());
+    let args = Args::parse();
 
-    if !input_path.exists() || input_path.is_dir() {
-        println!("epc: file not found");
+    let epub_file = Path::new(&args.file);
+    if !epub_file.exists() || epub_file.is_dir()
+        || epub_file.extension().unwrap_or(String::new().as_ref()) != "epub" {
+        println!("epc: file not found or not an epub");
         return;
     }
 
-    if input_path.extension().unwrap_or(String::new().as_ref()) != "epub" {
-        println!("epc: file not an epub");
+    let chars_per_page: usize = args.chars_per_page;
+    if chars_per_page == 0 {
+        println!("epc: chars per page must be higher than 0");
         return;
     }
 
-    match count_epub_pages(input_path) {
+    match count_epub_pages(epub_file, chars_per_page) {
         None => println!("epc: unable to read epub contents"),
         Some(page_count) => {
             println!(
                 "{} {}",
                 page_count,
-                input_path.file_name().unwrap().to_string_lossy().replace(".epub", "")
+                epub_file.file_name().unwrap().to_string_lossy().replace(".epub", "")
             );
         }
     };
