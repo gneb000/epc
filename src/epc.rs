@@ -1,5 +1,6 @@
 /// Counts the pages in an epub file (based on 2000 chars per page).
 use epub::doc::EpubDoc;
+use std::ffi::OsStr;
 use std::path::Path;
 
 use clap::Parser;
@@ -56,7 +57,11 @@ fn main() {
             println!(
                 "{} {}",
                 page_count,
-                epub_file.file_name().unwrap().to_string_lossy().replace(".epub", "")
+                epub_file
+                    .file_name()
+                    .unwrap_or(OsStr::new("unknown_file"))
+                    .to_string_lossy()
+                    .replace(".epub", "")
             );
         }
     };
