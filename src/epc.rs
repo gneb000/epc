@@ -2,12 +2,13 @@
 use epub::doc::EpubDoc;
 use std::ffi::OsStr;
 use std::path::Path;
+use std::process::exit;
 
 use clap::Parser;
 
 /// epub page counter (epc): counts pages in epub file based on char count
 #[derive(Parser)]
-#[command(author, version, about, long_about = None)]
+#[command(version, about, long_about = None)]
 struct Args {
     /// path to epub file
     #[arg(value_name = "EPUB_FILE")]
@@ -41,18 +42,21 @@ fn main() {
     let epub_file = Path::new(&args.file);
     if !epub_file.exists() || epub_file.is_dir()
         || epub_file.extension().unwrap_or(String::new().as_ref()) != "epub" {
-        println!("epc: file not found or not an epub");
-        return;
+        println!("epc: error: file not found or not an epub");
+        exit(1);
     }
 
     let chars_per_page: usize = args.chars_per_page;
     if chars_per_page == 0 {
-        println!("epc: chars per page must be higher than 0");
-        return;
+        println!("epc: error: chars per page must be higher than 0");
+        exit(1);
     }
 
     match count_epub_pages(epub_file, chars_per_page) {
-        None => println!("epc: unable to read epub contents"),
+        None => {
+            println!("epc: error: unable to read epub contents");
+            exit(1);
+        },
         Some(page_count) => {
             println!(
                 "{} {}",
