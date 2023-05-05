@@ -42,19 +42,19 @@ fn main() {
     let epub_file = Path::new(&args.file);
     if !epub_file.exists() || epub_file.is_dir()
         || epub_file.extension().unwrap_or(String::new().as_ref()) != "epub" {
-        println!("epc: error: file not found or not an epub");
+        eprintln!("epc: error: file not found or not an epub");
         exit(1);
     }
 
     let chars_per_page: usize = args.chars_per_page;
     if chars_per_page == 0 {
-        println!("epc: error: chars per page must be higher than 0");
+        eprintln!("epc: error: chars per page must be higher than 0");
         exit(1);
     }
 
     match count_epub_pages(epub_file, chars_per_page) {
         None => {
-            println!("epc: error: unable to read epub contents");
+            eprintln!("epc: error: unable to read epub contents");
             exit(1);
         },
         Some(page_count) => {
